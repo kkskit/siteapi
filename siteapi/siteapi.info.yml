@@ -1,0 +1,11 @@
+name: Site Api
+type: module
+description: 'This module can be used for inserting site api key into site information form.'
+package: Custom
+# core: 8.x
+
+# Information added by krishna kant mishra packaging script on 2017-07-01
+version: '8.x-1.0'
+core: '8.x'
+project: 'siteapi'
+datestamp: 1499006482

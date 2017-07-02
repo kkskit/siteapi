@@ -1,0 +1,47 @@
+<?php
+/**
+ * @file
+ * siteapi module to add field in siteinformation form.
+ */
+ 
+use \Drupal\Core\Form\FormStateInterface;
+use \Drupal\node\NodeInterface;
+use \Drupal\Core\Session\AccountInterface;
+use \Drupal\Core\Access\AccessResult;
+
+function siteapi_form_system_site_information_settings_alter(&$form, $form_state, $form_id) {
+  $site_config = \Drupal::config('siteapi.settings');
+  //gengerate custom field into site information form
+  $form['site_information']['siteapikey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Site API Key'),
+	'#required' => TRUE,
+    '#default_value' => $site_config->get('siteapikey')
+  );
+  $form['actions']['submit']['#value'] = t('Update Configuration');
+  //on submit form call custom function
+  $form['#submit'][] = 'call_handler';
+}
+
+function call_handler($form, &$form_state) {
+  $skey = $form_state->getValue('siteapikey');
+  if($skey == 'No API Key yet'){
+	drupal_set_message(t('Please enter valid site api key'), 'error');
+  }else{
+	\Drupal::configFactory()->getEditable('siteapi.settings')->set('siteapikey', $skey)->save();  
+	//send status to user about site api key
+	drupal_set_message(t('Site API Key : %skey has been saved', array('%skey' => $skey)),'status');  
+  }
+}
+
+function siteapi_node_access($node, $op, $account) {
+  //access site api setting
+  $site_config = \Drupal::config('siteapi.settings');	
+  //if not submitted api key then send access denied responce to view node(page) for anonymous user 
+  if ($node->getType() == 'page' && $site_config->get('siteapikey') == 'No API Key yet') {
+	//send access denied response
+	return AccessResult::forbidden();
+  }
+}
+
+?>
